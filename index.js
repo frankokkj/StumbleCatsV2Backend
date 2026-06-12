@@ -32,24 +32,23 @@ const Title = "Stumble Cats Backend " + process.env.version;
 const PORT = process.env.PORT || 8080;
 
 app.use(express.json());
+app.use(authenticate);
 
-// --- ROUTES THAT DO NOT NEED AUTHENTICATION ---
 app.post("/photon/auth", VerifyPhoton);
 app.get("/onlinecheck", OnlineCheck);
 
-// Allowing name updates to bypass the global authentication gate if the client lacks a token
+app.get("/matchmaking/filter", MatchmakingController.getMatchmakingFilter);
+
+app.post('/user/login', UserController.login);
 app.post('/user/updateusername', UserController.updateUsername);
 app.post('/user/update', UserController.updateUsername);
-
-// --- GLOBAL AUTHENTICATION GATE ---
-// Everything below this line requires a valid session token
-app.use(authenticate);
-
-// --- ROUTES THAT REQUIRE AUTHENTICATION ---
-app.get("/matchmaking/filter", MatchmakingController.getMatchmakingFilter);
-app.post('/user/login', UserController.login);
+app.post('/user/updateusername', UserController.updateUsername);
+app.post('/user/update', UserController.updateUsername);
+app.post('/user/updateusername', UserController.updateUsername);
+app.post('/user/update', UserController.updateUsername);
 app.get('/user/config', sendShared);
 app.get('/usersettings', UserController.getSettings);
+app.post('/user/updateusername', UserController.updateUsername);
 app.get('/user/deleteaccount', UserController.deleteAccount);
 app.post('/user/linkplatform', UserController.linkPlatform);
 app.post('/user/unlinkplatform', UserController.unlinkPlatform);
@@ -58,9 +57,8 @@ app.post('/user/profile', UserController.getProfile);
 app.post('/user-equipped-cosmetics/update', UserController.updateCosmetics);
 app.post('/user/cosmetics/addskin', UserController.addSkin);
 app.post('/user/cosmetics/setequipped', UserController.setEquippedCosmetic);
-
 app.post('/friends/request/accept', FriendsController.add);
-  delete('/friends/:UserId', FriendsController.remove);
+app.delete('/friends/:UserId', FriendsController.remove);
 app.get('/friends', FriendsController.list);
 app.post('/friends/search', FriendsController.search);
 app.post('/friends/request', FriendsController.request);
@@ -68,7 +66,6 @@ app.post('/friends/accept', FriendsController.accept);
 app.post('/friends/request/decline', FriendsController.reject);
 app.post('/friends/cancel', FriendsController.cancel);
 app.get('/friends/request', FriendsController.pending);
-
 app.get('/social/interactions', SocialController.getInteractions);
 app.get('//social/interactions', SocialController.getInteractions);
 app.get('/round/finish/:round', RoundController.finishRound);
@@ -91,31 +88,47 @@ app.get('/missions', MissionsController.getMissions);
 app.post('/missions/:missionId/rewards/claim/v2', MissionsController.claimMissionReward);
 app.post('/missions/objective/:objectiveId/:milestoneId/rewards/claim/v2', MissionsController.claimMilestoneReward);
 
+app.post('/friends/request/accept', FriendsController.add);
+app.delete('/friends/:UserId', FriendsController.remove);
+app.get('/friends', FriendsController.list);
+app.post('/friends/search', FriendsController.search);
+app.post('/friends/request', FriendsController.request);
+app.post('/friends/accept', FriendsController.accept);
+app.post('/friends/request/decline', FriendsController.reject);
+app.post('/friends/cancel', FriendsController.cancel);
+app.get('/friends/request', FriendsController.pending);
+
 app.get("/game-events/me", EventsController.getActive);
-const { application } = require("express");
+
 app.get("/news/getall", NewsController.GetNews);
+
 app.post('/analytics', AnalyticsController.analytic);
 
 app.get('/highscore/:type/list/', async (req, res, next) => {
   try {
     const { type } = req.params;
     const { start = 0, count = 100, country = 'global' } = req.query;
+
     const startNum = parseInt(start, 10);
     const countNum = parseInt(count, 10);
 
     if (!type) {
       return res.status(400).json({ error: "O tipo é necessário" });
     }
+
     if (isNaN(startNum) || isNaN(countNum)) {
       return res.status(400).json({ error: "Os parâmetros start e count devem ser números" });
     }
 
     const result = await UserModel.GetHighscore(type, country, startNum, countNum);
+
     res.json(result);
   } catch (err) {
     next(err);
   }
 });
+
+app.get("/social/interactions", SocialController.getInteractions);
 
 app.get("/tournamentx/active", TournamentXController.getActive);
 app.get("/tournamentx/active/v2", TournamentXController.getActive);
@@ -131,7 +144,14 @@ app.get("/api/v1/ping", async (req, res) => {
 app.post("/api/v1/userLoginExternal ", TournamentController.login);
 app.get("/api/v1/tournaments", TournamentController.getActive);
 
+app.get('/round/finish/:round', RoundController.finishRound);
+app.get('/round/finishv2/:round', RoundController.finishRound);
+app.post('/round/finish/v4/:round?', RoundController.finishRoundV4);
+app.post('/round/eventfinish/v4/:round?', RoundController.finishRoundV4);
+
+// Handle the v3 route pattern that the client is calling
 app.post('/round/finish/v3/:country/:gameId/:userId', (req, res) => {
+  // Extract round from request body and add it to params for compatibility
   req.params.round = req.body.Round;
   RoundController.finishRoundV4(req, res);
 });
@@ -140,9 +160,13 @@ app.get('/economy/luckyspin', (req, res) =>
   EconomyController.getLuckySpin(req, res)
 );
 
+
+
+
+
+// Handle custom round finish for custom parties
 app.post('/round/customroundfinish/:country/:gameId/:userId', RoundController.finishCustomRound);
 app.post('//round/customroundfinish/:country/:gameId/:userId', RoundController.finishCustomRound);
-
 require('./ShopFix')(app);
 app.use(errorControll);
 
