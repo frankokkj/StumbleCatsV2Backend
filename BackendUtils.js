@@ -25,7 +25,7 @@ const SharedData = require("./shared.json");
 class Database {
   constructor() {
     this.mongoUri = process.env.mongoUri;
-    this.dbName = "StumbleDB";
+    this.dbName = "StumbleGuys";
     this.client = null;
     this.db = null;
     this.collections = {
@@ -153,7 +153,7 @@ class Database {
           maxRounds: 1,
           minMatchmakingSeconds: 0,
           entryCurrencyType: "gems",
-          entryCurrencyCost: 0,
+          entryCurrencyCost: 30,
           entryCurrencyType2: "tournament_ticket_rare",
           entryCurrencyCost2: 0,
           areEmotesRestricted: false,
@@ -313,7 +313,7 @@ class UserModel {
   static async create(ip, deviceId, platformData = {}) {
   const now = new Date();
   const userId = Math.floor(Math.random() * 999);
-  const username = 'Cats Player' + userId;
+  const username = 'StumbleCats ' + CryptoUtils.GenCaracters(10).toUpperCase();
   
   let ipCountry = 'US';
   let ipRegion = 'NA';
