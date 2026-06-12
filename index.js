@@ -42,6 +42,8 @@ app.get("/matchmaking/filter", MatchmakingController.getMatchmakingFilter);
 app.post('/user/login', UserController.login);
 app.post('/user/updateusername', UserController.updateUsername);
 app.post('/user/update', UserController.updateUsername);
+app.post('/user/updateusername', UserController.updateUsername);
+app.post('/user/update', UserController.updateUsername);
 app.get('/user/config', sendShared);
 app.get('/usersettings', UserController.getSettings);
 app.post('/user/updateusername', UserController.updateUsername);
