@@ -153,7 +153,7 @@ class Database {
           maxRounds: 1,
           minMatchmakingSeconds: 0,
           entryCurrencyType: "gems",
-          entryCurrencyCost: 30,
+          entryCurrencyCost: 0,
           entryCurrencyType2: "tournament_ticket_rare",
           entryCurrencyCost2: 0,
           areEmotesRestricted: false,
